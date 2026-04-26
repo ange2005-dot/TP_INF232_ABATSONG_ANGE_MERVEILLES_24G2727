@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Dashboard</title>
+</head>
+<body>
+    <h1>Dashboard</h1>
+    <p>Moyenne notes : {{ avg_grade }}</p>
+    <p>Moyenne heures : {{ avg_hours }}</p>
+    <p>Corrélation : {{ correlation }}</p>
+    <p>Note max : {{ max_grade }}</p>
+    <p>Note min : {{ min_grade }}</p>
+    <p>{{ interpretation }}</p>
+    <div>{{ table | safe }}</div>
+    <p><img src="/static/plot.png" alt="Graphique"></p>
+    <p><a href="/">Retour</a></p>
+</body>
+</html>
