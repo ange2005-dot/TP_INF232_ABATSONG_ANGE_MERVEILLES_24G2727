@@ -3,16 +3,19 @@
 <head>
     <meta charset="utf-8">
     <title>Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <h1>Dashboard</h1>
-    <p>Moyenne notes : {{ avg_grade }}</p>
-    <p>Moyenne heures : {{ avg_hours }}</p>
-    <p>Corrélation : {{ correlation }}</p>
-    <p>Note max : {{ max_grade }}</p>
-    <p>Note min : {{ min_grade }}</p>
-    <p>{{ interpretation }}</p>
-    <div>{{ table | safe }}</div>
-    <p><a href="/">Retour</a></p>
+    <div class="container">
+        <h1>Dashboard</h1>
+        <p>Moyenne notes : {{ avg_grade }}</p>
+        <p>Moyenne heures : {{ avg_hours }}</p>
+        <p>Corrélation : {{ correlation }}</p>
+        <p>Note max : {{ max_grade }}</p>
+        <p>Note min : {{ min_grade }}</p>
+        <p>{{ interpretation }}</p>
+        <div>{{ table | safe }}</div>
+        <p><a href="/">Retour</a></p>
+    </div>
 </body>
 </html>
