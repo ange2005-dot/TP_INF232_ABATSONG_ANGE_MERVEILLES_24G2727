@@ -1,8 +1,7 @@
 from flask import Flask, render_template, request, redirect
 import sqlite3
 import os
-import pandas as pd
-import matplotlib.pyplot as plt
+import math
 
 app = Flask(__name__)
 
@@ -43,13 +42,24 @@ def submit():
 
     return redirect('/dashboard')
 
+def compute_correlation(rows, avg_hours, avg_grade):
+    n = len(rows)
+    if n < 2:
+        return None
+    cov = sum((h - avg_hours) * (g - avg_grade) for _, h, g in rows) / (n - 1)
+    var_hours = sum((h - avg_hours) ** 2 for _, h, _ in rows) / (n - 1)
+    var_grade = sum((g - avg_grade) ** 2 for _, _, g in rows) / (n - 1)
+    if var_hours == 0 or var_grade == 0:
+        return None
+    return cov / math.sqrt(var_hours * var_grade)
+
 @app.route('/dashboard')
 def dashboard():
     conn = sqlite3.connect("database.db")
-    df = pd.read_sql_query("SELECT * FROM data", conn)
+    rows = conn.execute("SELECT age, study_hours, grade FROM data").fetchall()
     conn.close()
 
-    if df.empty:
+    if not rows:
         return render_template(
             "dashboard.html",
             avg_grade="N/A",
@@ -61,30 +71,31 @@ def dashboard():
             table="<p>Aucune donnée enregistrée.</p>"
         )
 
-    avg_grade = df['grade'].mean()
-    avg_hours = df['study_hours'].mean()
-    correlation = df['study_hours'].corr(df['grade'])
-    correlation_display = round(correlation, 2) if pd.notna(correlation) else "N/A"
+    count = len(rows)
+    total_grade = sum(r[2] for r in rows)
+    total_hours = sum(r[1] for r in rows)
 
-    max_grade = df['grade'].max()
-    min_grade = df['grade'].min()
+    avg_grade = total_grade / count
+    avg_hours = total_hours / count
+    correlation = compute_correlation(rows, avg_hours, avg_grade)
+    correlation_display = round(correlation, 2) if correlation is not None else "N/A"
 
-    if correlation > 0.5:
+    max_grade = max(r[2] for r in rows)
+    min_grade = min(r[2] for r in rows)
+
+    if correlation is None:
+        interpretation = "Pas assez de données pour calculer la corrélation."
+    elif correlation > 0.5:
         interpretation = "Plus les étudiants étudient, meilleures sont leurs notes."
     elif correlation < -0.5:
         interpretation = "Relation inverse inattendue."
     else:
         interpretation = "Relation faible entre étude et performance."
 
-    plt.figure()
-    plt.scatter(df['study_hours'], df['grade'])
-    plt.xlabel("Heures d'étude")
-    plt.ylabel("Notes")
-    plt.title("Relation étude / note")
-    plt.savefig(os.path.join("static", "plot.png"))
-    plt.close()
-
-    table = df.to_html(classes='table', index=False)
+    table = "<table border='1'><tr><th>Âge</th><th>Heures d'étude</th><th>Note</th></tr>"
+    for age, hours, grade in rows:
+        table += f"<tr><td>{age}</td><td>{hours}</td><td>{grade}</td></tr>"
+    table += "</table>"
 
     return render_template(
         "dashboard.html",
