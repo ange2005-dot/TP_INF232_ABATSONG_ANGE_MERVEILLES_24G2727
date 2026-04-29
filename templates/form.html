@@ -1,19 +1,51 @@
-<!DOCTYPE html>
+DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Student's_analysis - Formulaire</title>
+    <title>TP_INF_232_ANALYSE DES DONNEES DES ETUDIANTS - Formulaire</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <div class="container from-page">
-    <h1>Ajouter une entrée</h1>
-    <form action="/submit" method="post">
-        <label>Âge : <input type="number" name="age" required></label>
-        <label>Heures d'étude : <input type="number" step="0.1" name="hours" required></label>
-        <label>Note : <input type="number" step="0.1" name="grade" required></label>
-        <button type="submit">Envoyer</button>
-    </form>
-    <p><a href="/">Retour</a></p>
+    <div class="container form-page">
+        <h1>Ajouter une entrée étudiante</h1>
+        <form action="/submit" method="post">
+            <label>Âge :
+                <input type="number" name="age" required>
+            </label>
+            <label>Heures d'étude :
+                <input type="number" step="0.1" name="hours" required>
+            </label>
+            <label>Note :
+                <input type="number" step="0.1" name="grade" required>
+            </label>
+            <label>Couleur de peau :
+                <select name="skin_color" required>
+                    <option value="Clair">Clair</option>
+                    <option value="Moyen">Moyen</option>
+                    <option value="Foncé">Foncé</option>
+                    <option value="Autre">Autre</option>
+                </select>
+            </label>
+            <label>Niveau scolaire :
+                <select name="education_level" required>
+                    <option value="Primaire">Primaire</option>
+                    <option value="Collège">Collège</option>
+                    <option value="Lycée">Lycée</option>
+                    <option value="Université">Université</option>
+                </select>
+            </label>
+            <label>Filière :
+                <select name="major" required>
+                    <option value="Sciences">Sciences</option>
+                    <option value="Lettres">Lettres</option>
+                    <option value="Économie">Économie</option>
+                    <option value="Informatique">Informatique</option>
+                    <option value="Autre">Autre</option>
+                </select>
+            </label>
+            <button class="primary-button" type="submit">Envoyer</button>
+        </form>
+        <p><a class="secondary-button" href="/">Retour</a></p>
+    </div>
 </body>
 </html>
