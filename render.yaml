@@ -1,6 +1,6 @@
 services:
     type: web
-    name: Student's_analysis_Abatsong_ange_merveilles_24G2727
+    name: tp-inf-232-analyse-des-donnees
     env: python 
     plan: free 
     buildCommand: pip install -r requirements.txt
