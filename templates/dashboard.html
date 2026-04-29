@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html>
 <head>
     <meta charset="utf-8">
@@ -6,16 +6,73 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Dashboard</h1>
-        <p>Moyenne notes : {{ avg_grade }}</p>
-        <p>Moyenne heures : {{ avg_hours }}</p>
-        <p>Corrélation : {{ correlation }}</p>
-        <p>Note max : {{ max_grade }}</p>
-        <p>Note min : {{ min_grade }}</p>
-        <p>{{ interpretation }}</p>
-        <div>{{ table | safe }}</div>
-        <p><a href="/">Retour</a></p>
+    <div class="container dashboard-page">
+        <header class="hero">
+            <h1>TP_INF_232_ANALYSE DES DONNEES DES ETUDIANTS</h1>
+            <p>Visualise les performances des étudiants avec couleur de peau, niveau scolaire et filière.</p>
+        </header>
+        <div class="stats-grid">
+            <div class="stat-card bright-card">
+                <h2>Moyenne note</h2>
+                <p>{{ avg_grade }}</p>
+            </div>
+            <div class="stat-card bright-card">
+                <h2>Moyenne heures</h2>
+                <p>{{ avg_hours }}</p>
+            </div>
+            <div class="stat-card bright-card">
+                <h2>Corrélation</h2>
+                <p>{{ correlation }}</p>
+            </div>
+            <div class="stat-card bright-card">
+                <h2>Notes extrêmes</h2>
+                <p>Max : {{ max_grade }} / Min : {{ min_grade }}</p>
+            </div>
+        </div>
+        <div class="interpretation-card">
+            <h2>Interprétation</h2>
+            <p>{{ interpretation }}</p>
+        </div>
+        <section class="distribution-row">
+            <div class="distribution-block">
+                <h3>Couleur de peau</h3>
+                {% if skin_counts %}
+                    <div class="badge-list">
+                        {% for skin, count in skin_counts.items() %}
+                            <span class="badge">{{ skin }} : {{ count }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p>Aucune donnée.</p>
+                {% endif %}
+            </div>
+            <div class="distribution-block">
+                <h3>Niveau scolaire</h3>
+                {% if level_counts %}
+                    <div class="badge-list">
+                        {% for level, count in level_counts.items() %}
+                            <span class="badge">{{ level }} : {{ count }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p>Aucune donnée.</p>
+                {% endif %}
+            </div>
+            <div class="distribution-block">
+                <h3>Filière</h3>
+                {% if major_counts %}
+                    <div class="badge-list">
+                        {% for major, count in major_counts.items() %}
+                            <span class="badge">{{ major }} : {{ count }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p>Aucune donnée.</p>
+                {% endif %}
+            </div>
+        </section>
+        <div class="table-wrapper"> {{ table | safe }} </div>
+        <p><a class="primary-button" href="/">Retour</a></p>
     </div>
 </body>
 </html>
