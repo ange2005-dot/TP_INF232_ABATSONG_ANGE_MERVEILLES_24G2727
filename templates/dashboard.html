@@ -3,98 +3,48 @@
 <head>
 <meta charset="utf-8">
 <link rel="stylesheet" href="/static/style.css">
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
-
 </head>
-
 <body>
-
-<div class="container fade-in">
+<div class="container">
 
 <div class="hero">
-    <h1>📊 Dashboard Analytics</h1>
-    <p>Analyse intelligente des performances</p>
+<h1>Ajouter données</h1>
 </div>
 
-<!-- STATS -->
-<div class="dashboard-grid">
-    <div class="card">
-        <h3>Moyenne note</h3>
-        <div class="stat">{{ avg_grade }}</div>
-    </div>
+<form action="/submit" method="post">
 
-    <div class="card">
-        <h3>Moyenne heures</h3>
-        <div class="stat">{{ avg_hours }}</div>
-    </div>
+<label>Âge <input type="number" name="age" required></label>
+<label>Heures <input type="number" step="0.1" name="hours" required></label>
+<label>Note <input type="number" step="0.1" name="grade" required></label>
 
-    <div class="card">
-        <h3>Corrélation</h3>
-        <div class="stat">{{ correlation }}</div>
-    </div>
-</div>
+<label>Couleur
+<select name="skin_color">
+<option>Clair</option>
+<option>Moyen</option>
+<option>Foncé</option>
+</select>
+</label>
 
-<br>
+<label>Niveau
+<select name="education_level">
+<option>Primaire</option>
+<option>Lycée</option>
+<option>Université</option>
+</select>
+</label>
 
-<!-- GRAPHIQUES -->
-<div class="dashboard-grid">
+<label>Filière
+<select name="major">
+<option>Sciences</option>
+<option>Informatique</option>
+<option>Économie</option>
+</select>
+</label>
 
-    <div class="card">
-        <h3>Répartition par filière</h3>
-        <canvas id="barChart"></canvas>
-    </div>
+<button class="primary-button">Envoyer</button>
 
-    <div class="card">
-        <h3>Distribution des notes</h3>
-        <canvas id="lineChart"></canvas>
-    </div>
-
-</div>
-
-<br>
-
-<div class="card">
-    <h3>Données</h3>
-    {{ table | safe }}
-</div>
+</form>
 
 </div>
-
-<script>
-
-// BAR CHART
-new Chart(document.getElementById("barChart"), {
-    type: 'bar',
-    data: {
-        labels: {{ major_counts.keys() | list | safe }},
-        datasets: [{
-            label: "Étudiants",
-            data: {{ major_counts.values() | list | safe }},
-            backgroundColor: "#1a73e8"
-        }]
-    },
-    options: {
-        animation: {
-            duration: 2000
-        }
-    }
-});
-
-// LINE CHART (notes)
-new Chart(document.getElementById("lineChart"), {
-    type: 'line',
-    data: {
-        labels: [...Array({{ table|length }}).keys()],
-        datasets: [{
-            label: "Notes",
-            data: {{ table|safe }},
-        }]
-    }
-});
-
-</script>
-
 </body>
 </html>
