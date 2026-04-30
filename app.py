@@ -1,45 +1,45 @@
+from flask import Flask, render_template, request, redirect
+import pandas as pd
+
+app = Flask(__name__)
+
+data = []
+
+@app.route("/")
+def home():
+    return render_template("index.html")
+
+@app.route("/form")
+def form():
+    return render_template("form.html")
+
+@app.route("/submit", methods=["POST"])
+def submit():
+    data.append({
+        "age": int(request.form["age"]),
+        "hours": float(request.form["hours"]),
+        "grade": float(request.form["grade"]),
+        "level": request.form["level"],
+        "major": request.form["major"]
+    })
+    return redirect("/dashboard")
+
 @app.route("/dashboard")
 def dashboard():
-
     if not data:
         return render_template("dashboard.html", empty=True)
 
     df = pd.DataFrame(data)
 
-    # SAFE FILTER
-    level_filter = request.args.get("level")
-    if level_filter and level_filter != "all":
-        df = df[df["level"] == level_filter]
-
-    avg_grade = round(df["grade"].mean(), 2)
-    avg_hours = round(df["hours"].mean(), 2)
-
-    correlation = df["hours"].corr(df["grade"])
-    if pd.isna(correlation):
-        correlation = 0
-    else:
-        correlation = round(correlation, 2)
-
-    # SAFE GRAPH
-    import matplotlib.pyplot as plt
-    import os
-    os.makedirs("static", exist_ok=True)
-
-    plt.figure()
-    df["major"].value_counts().plot(kind="bar")
-    plt.savefig("static/bar.png")
-    plt.close()
-
-    plt.figure()
-    plt.scatter(df["hours"], df["grade"])
-    plt.savefig("static/scatter.png")
-    plt.close()
-
     return render_template(
         "dashboard.html",
-        avg_grade=avg_grade,
-        avg_hours=avg_hours,
-        correlation=correlation,
-        data=df.to_dict(orient="records"),
-        levels=["all","L1","L2","L3"]
+        avg_grade=round(df["grade"].mean(),2),
+        avg_hours=round(df["hours"].mean(),2),
+        correlation=round(df["hours"].corr(df["grade"]),2),
+        major_counts=df["major"].value_counts().to_dict(),
+        level_counts=df["level"].value_counts().to_dict(),
+        table=df.to_html(classes="table", index=False)
     )
+
+if __name__ == "__main__":
+    app.run(debug=True)
