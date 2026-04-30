@@ -1,73 +1,107 @@
-@app.route("/dashboard")
-def dashboard():
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard - EduAnalytics</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <h1>📊 EduAnalytics</h1>
+            <div class="nav-links">
+                <a href="/">Accueil</a>
+                <a href="/form">Formulaire</a>
+                <a href="/dashboard">Dashboard</a>
+            </div>
+        </div>
+    </nav>
 
-    try:
+    {% if empty %}
+    <div class="empty-state">
+        <h2>📭 Aucune donnée</h2>
+        <p>Ajoutez des étudiants via le formulaire</p>
+        <a href="/form" class="btn-primary">➕ Ajouter un étudiant</a>
+    </div>
+    {% else %}
 
-        if not data:
-            return render_template("dashboard.html", empty=True)
+    <div class="dashboard-header">
+        <h1>📈 Dashboard</h1>
+    </div>
 
-        df = pd.DataFrame(data)
+    <div class="kpi-grid">
+        <div class="kpi-card blue">
+            <div class="kpi-value">{{ stats.total }}</div>
+            <div class="kpi-label">Étudiants</div>
+        </div>
+        <div class="kpi-card green">
+            <div class="kpi-value">{{ stats.avg_grade }}/20</div>
+            <div class="kpi-label">Note moyenne</div>
+        </div>
+        <div class="kpi-card orange">
+            <div class="kpi-value">{{ stats.avg_hours }}h</div>
+            <div class="kpi-label">Heures/semaine</div>
+        </div>
+        <div class="kpi-card purple">
+            <div class="kpi-value">{{ stats.correlation }}</div>
+            <div class="kpi-label">Corrélation</div>
+        </div>
+    </div>
 
-        level_filter = request.args.get("level", "all")
-        major_filter = request.args.get("major", "all")
+    {% if charts %}
+    <div class="charts-grid">
+        {% if charts.bar %}
+        <div class="chart-card">
+            <h3>📊 Répartition des filières</h3>
+            <img src="data:image/png;base64,{{ charts.bar }}" style="width:100%">
+        </div>
+        {% endif %}
+        {% if charts.scatter %}
+        <div class="chart-card">
+            <h3>📈 Heures vs Notes</h3>
+            <img src="data:image/png;base64,{{ charts.scatter }}" style="width:100%">
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
 
-        if level_filter != "all":
-            df = df[df["level"] == level_filter]
-
-        if major_filter != "all":
-            df = df[df["major"] == major_filter]
-
-        avg_grade = round(df["grade"].mean(), 2) if len(df) else 0
-        avg_hours = round(df["hours"].mean(), 2) if len(df) else 0
-
-        correlation = df["hours"].corr(df["grade"]) if len(df) > 1 else 0
-        if pd.isna(correlation):
-            correlation = 0
-        else:
-            correlation = round(correlation, 2)
-
-        stats = {
-            "total": len(df),
-            "avg_grade": avg_grade,
-            "avg_hours": avg_hours,
-            "correlation": correlation
-        }
-
-        levels = ["all", "L1", "L2", "L3"]
-        majors = ["all"] + sorted(list(set([d["major"] for d in data])))
-
-        charts = {}
-
-        if len(df) > 0:
-
-            fig, ax = plt.subplots()
-            df["major"].value_counts().plot(kind="bar", ax=ax)
-            buf = BytesIO()
-            plt.savefig(buf, format="png")
-            buf.seek(0)
-            charts["bar_chart"] = base64.b64encode(buf.read()).decode()
-            plt.close()
-
-            fig, ax = plt.subplots()
-            ax.scatter(df["hours"], df["grade"])
-            buf = BytesIO()
-            plt.savefig(buf, format="png")
-            buf.seek(0)
-            charts["scatter_chart"] = base64.b64encode(buf.read()).decode()
-            plt.close()
-
-        return render_template(
-            "dashboard.html",
-            empty=False,
-            data=df.to_dict("records"),
-            stats=stats,
-            charts=charts,
-            levels=levels,
-            majors=majors,
-            current_level=level_filter,
-            current_major=major_filter
-        )
-
-    except Exception as e:
-        print("ERREUR DASHBOARD:", e)
-        return f"Erreur serveur: {e}"
+    <div class="table-container">
+        <h3>📋 Liste des étudiants</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Âge</th>
+                    <th>Niveau</th>
+                    <th>Filière</th>
+                    <th>Heures</th>
+                    <th>Note</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td><strong>{{ student.name }}</strong></td>
+                    <td>{{ student.age }}</td>
+                    <td>{{ student.level }}</td>
+                    <td>{{ student.major }}</td>
+                    <td>{{ student.hours }}h</td>
+                    <td>
+                        <span class="grade 
+                            {% if student.grade >= 12 %}good
+                            {% elif student.grade >= 10 %}avg
+                            {% else %}bad{% endif %}">
+                            {{ student.grade }}/20
+                        </span>
+                    </td>
+                    <td>
+                        <a href="/delete/{{ loop.index0 }}" class="delete-btn" onclick="return confirm('Supprimer ?')"></a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</body>
+</html>
