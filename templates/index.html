@@ -1,5 +1,46 @@
-<div class="hero">
-<h1>📊 Data Analytics Pro</h1>
-<a href="/form">Ajouter</a>
-<a href="/dashboard">Dashboard</a>
-</div>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduAnalytics</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">📊 EduAnalytics</div>
+            <ul class="nav-links">
+                <li><a href="/" class="active">Accueil</a></li>
+                <li><a href="/form">Formulaire</a></li>
+                <li><a href="/dashboard">Dashboard</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">Analysez la Performance<br><span class="gradient-text">de vos Étudiants</span></h1>
+            <p class="hero-subtitle">Visualisez, analysez et optimisez les résultats académiques</p>
+            <div class="hero-buttons">
+                <a href="/form" class="btn btn-primary">➕ Ajouter un étudiant</a>
+                <a href="/dashboard" class="btn btn-secondary">📈 Voir le dashboard</a>
+            </div>
+        </div>
+        <div class="hero-stats">
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.total if stats else 0 }}</div>
+                <div class="stat-label">Étudiants</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.avg_grade if stats else 0 }}</div>
+                <div class="stat-label">Moyenne</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.avg_hours if stats else 0 }}</div>
+                <div class="stat-label">Heures/sem</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
