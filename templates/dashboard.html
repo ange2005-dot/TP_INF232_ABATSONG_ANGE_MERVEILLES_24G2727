@@ -1,87 +1,75 @@
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="/static/style.css">
+</head>
 
-<button onclick="toggleDark()">🌙 Mode sombre</button>
+<body>
 
 <div class="hero">
-<h1>Dashboard</h1>
+<h1>📊 Dashboard Universitaire</h1>
+<a href="/export/pdf">🧾 Export PDF</a>
 </div>
+
+<div class="container">
+
+<!-- FILTRE -->
+<form method="get">
+<select name="level">
+{% for l in levels %}
+<option value="{{l}}">{{l}}</option>
+{% endfor %}
+</select>
+<button>Filtrer</button>
+</form>
 
 <!-- KPI -->
 <div class="grid">
-<div class="card"><div class="kpi" id="k1"></div>Moyenne note</div>
-<div class="card"><div class="kpi" id="k2"></div>Moyenne heures</div>
-<div class="card"><div class="kpi" id="k3"></div>Corrélation</div>
+
+<div class="card">
+<h3>Note moyenne</h3>
+<p>{{ avg_grade }}</p>
 </div>
 
-<br>
+<div class="card">
+<h3>Heures moyennes</h3>
+<p>{{ avg_hours }}</p>
+</div>
 
-<!-- FILTRE -->
-<select id="filter">
-<option value="all">Tous</option>
-<option value="Informatique">Informatique</option>
-<option value="Sciences">Sciences</option>
-<option value="Économie">Économie</option>
-</select>
+<div class="card">
+<h3>Corrélation</h3>
+<p>{{ correlation }}</p>
+</div>
 
-<br><br>
+</div>
 
-<canvas id="chart"></canvas>
+<!-- GRAPHIQUES PNG -->
+<h3>📊 Graphiques</h3>
 
-<ul>
+<div class="grid">
+<div class="card">
+<img src="/static/bar.png" width="100%">
+</div>
+
+<div class="card">
+<img src="/static/scatter.png" width="100%">
+</div>
+</div>
+
+<!-- TABLE -->
+<h3>Données</h3>
+
+<table border="1">
 {% for row in data %}
-<li>{{ row.grade }} - {{ row.hours }}h 
-<a href="/delete/{{ loop.index0 }}">❌</a>
-</li>
+<tr>
+<td>{{row.grade}}</td>
+<td>{{row.hours}}</td>
+<td><a href="/delete/{{loop.index0}}">❌</a></td>
+</tr>
 {% endfor %}
-</ul>
+</table>
 
-<script>
+</div>
 
-// KPI animation
-function animate(id, value) {
-    let i = 0;
-    let el = document.getElementById(id);
-    let interval = setInterval(() => {
-        i += value/20;
-        if(i >= value) { i = value; clearInterval(interval); }
-        el.innerText = i.toFixed(2);
-    }, 50);
-}
-
-animate("k1", {{ avg_grade }});
-animate("k2", {{ avg_hours }});
-animate("k3", {{ correlation }});
-
-// DATA
-let grades = {{ grades|safe }};
-let hours = {{ hours|safe }};
-let majors = {{ majors|safe }};
-
-// CHART
-let chart = new Chart(document.getElementById("chart"), {
-type:'scatter',
-data:{
-datasets:[{
-label:"Corrélation",
-data: grades.map((g,i)=>({x:hours[i], y:g}))
-}]
-}
-});
-
-// FILTER
-document.getElementById("filter").addEventListener("change", e=>{
-    let val = e.target.value;
-    let filtered = grades.map((g,i)=>({
-        g, h:hours[i], m:majors[i]
-    })).filter(x=> val==="all" || x.m===val);
-
-    chart.data.datasets[0].data = filtered.map(x=>({x:x.h,y:x.g}));
-    chart.update();
-});
-
-// DARK MODE
-function toggleDark(){
-    document.body.classList.toggle("dark");
-}
-
-</script>
+</body>
+</html>
