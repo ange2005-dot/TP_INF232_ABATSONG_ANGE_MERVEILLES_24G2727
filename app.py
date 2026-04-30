@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, redirect
 import pandas as pd
+import os
+os.makedirs("static", exist_ok=True)
 
 app = Flask(__name__)
 
