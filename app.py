@@ -5,8 +5,6 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import os
 from datetime import datetime
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
 import io
 import base64
 import numpy as np
@@ -124,25 +122,18 @@ def generate_charts(df):
     
     return charts
 
-@app.route("/export/pdf")
-def export_pdf():
+@app.route("/export/csv")
+def export_csv():
     if not data:
         return redirect("/dashboard")
     df = pd.DataFrame(data)
-    filename = f"dashboard_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
-    doc = SimpleDocTemplate(filename)
-    styles = getSampleStyleSheet()
-    elements = []
-    elements.append(Paragraph("Dashboard Universitaire", styles["Title"]))
-    elements.append(Spacer(1, 12))
-    elements.append(Paragraph(f"Date: {datetime.now().strftime('%d/%m/%Y %H:%M')}", styles["Normal"]))
-    elements.append(Spacer(1, 20))
-    elements.append(Paragraph(f"Nombre d'étudiants: {len(df)}", styles["Normal"]))
-    elements.append(Paragraph(f"Note moyenne: {df['grade'].mean():.2f}/20", styles["Normal"]))
-    elements.append(Paragraph(f"Heures moyennes: {df['hours'].mean():.1f}h/semaine", styles["Normal"]))
-    elements.append(Paragraph(f"Corrélation: {df['hours'].corr(df['grade']):.2f}", styles["Normal"]))
-    doc.build(elements)
-    return send_file(filename, as_attachment=True)
+    csv_data = df.to_csv(index=False)
+    return send_file(
+        io.BytesIO(csv_data.encode()),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name=f"dashboard_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    )
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=PORT, debug=False)
