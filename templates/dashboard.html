@@ -21,6 +21,7 @@ def dashboard():
     avg_hours = round(df["hours"].mean(), 2) if len(df) > 0 else 0
 
     correlation = df["hours"].corr(df["grade"]) if len(df) > 1 else 0
+
     if pd.isna(correlation):
         correlation = 0
     else:
@@ -55,7 +56,7 @@ def dashboard():
         charts["bar_chart"] = base64.b64encode(buf.read()).decode("utf-8")
         plt.close()
 
-        # SCATTER
+        # SCATTER CHART
         fig, ax = plt.subplots()
         ax.scatter(df["hours"], df["grade"])
         ax.set_title("Heures vs Notes")
