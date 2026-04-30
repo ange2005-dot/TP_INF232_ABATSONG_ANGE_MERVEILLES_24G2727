@@ -1,80 +1,73 @@
 @app.route("/dashboard")
 def dashboard():
 
-    if not data:
-        return render_template("dashboard.html", empty=True)
+    try:
 
-    df = pd.DataFrame(data)
+        if not data:
+            return render_template("dashboard.html", empty=True)
 
-    # FILTRES
-    level_filter = request.args.get("level", "all")
-    major_filter = request.args.get("major", "all")
+        df = pd.DataFrame(data)
 
-    if level_filter != "all":
-        df = df[df["level"] == level_filter]
+        level_filter = request.args.get("level", "all")
+        major_filter = request.args.get("major", "all")
 
-    if major_filter != "all":
-        df = df[df["major"] == major_filter]
+        if level_filter != "all":
+            df = df[df["level"] == level_filter]
 
-    # SAFE STATS
-    avg_grade = round(df["grade"].mean(), 2) if len(df) > 0 else 0
-    avg_hours = round(df["hours"].mean(), 2) if len(df) > 0 else 0
+        if major_filter != "all":
+            df = df[df["major"] == major_filter]
 
-    correlation = df["hours"].corr(df["grade"]) if len(df) > 1 else 0
+        avg_grade = round(df["grade"].mean(), 2) if len(df) else 0
+        avg_hours = round(df["hours"].mean(), 2) if len(df) else 0
 
-    if pd.isna(correlation):
-        correlation = 0
-    else:
-        correlation = round(correlation, 2)
+        correlation = df["hours"].corr(df["grade"]) if len(df) > 1 else 0
+        if pd.isna(correlation):
+            correlation = 0
+        else:
+            correlation = round(correlation, 2)
 
-    stats = {
-        "total": len(df),
-        "avg_grade": avg_grade,
-        "avg_hours": avg_hours,
-        "correlation": correlation
-    }
+        stats = {
+            "total": len(df),
+            "avg_grade": avg_grade,
+            "avg_hours": avg_hours,
+            "correlation": correlation
+        }
 
-    levels = ["all", "L1", "L2", "L3"]
-    majors = ["all"] + sorted(list(set([d["major"] for d in data])))
+        levels = ["all", "L1", "L2", "L3"]
+        majors = ["all"] + sorted(list(set([d["major"] for d in data])))
 
-    charts = {}
+        charts = {}
 
-    import matplotlib.pyplot as plt
-    import base64
-    from io import BytesIO
+        if len(df) > 0:
 
-    if len(df) > 0:
+            fig, ax = plt.subplots()
+            df["major"].value_counts().plot(kind="bar", ax=ax)
+            buf = BytesIO()
+            plt.savefig(buf, format="png")
+            buf.seek(0)
+            charts["bar_chart"] = base64.b64encode(buf.read()).decode()
+            plt.close()
 
-        # BAR CHART
-        fig, ax = plt.subplots()
-        df["major"].value_counts().plot(kind="bar", ax=ax)
-        ax.set_title("Filières")
+            fig, ax = plt.subplots()
+            ax.scatter(df["hours"], df["grade"])
+            buf = BytesIO()
+            plt.savefig(buf, format="png")
+            buf.seek(0)
+            charts["scatter_chart"] = base64.b64encode(buf.read()).decode()
+            plt.close()
 
-        buf = BytesIO()
-        plt.savefig(buf, format="png")
-        buf.seek(0)
-        charts["bar_chart"] = base64.b64encode(buf.read()).decode("utf-8")
-        plt.close()
+        return render_template(
+            "dashboard.html",
+            empty=False,
+            data=df.to_dict("records"),
+            stats=stats,
+            charts=charts,
+            levels=levels,
+            majors=majors,
+            current_level=level_filter,
+            current_major=major_filter
+        )
 
-        # SCATTER CHART
-        fig, ax = plt.subplots()
-        ax.scatter(df["hours"], df["grade"])
-        ax.set_title("Heures vs Notes")
-
-        buf = BytesIO()
-        plt.savefig(buf, format="png")
-        buf.seek(0)
-        charts["scatter_chart"] = base64.b64encode(buf.read()).decode("utf-8")
-        plt.close()
-
-    return render_template(
-        "dashboard.html",
-        empty=False,
-        data=df.to_dict(orient="records"),
-        stats=stats,
-        charts=charts,
-        levels=levels,
-        majors=majors,
-        current_level=level_filter,
-        current_major=major_filter
-    )
+    except Exception as e:
+        print("ERREUR DASHBOARD:", e)
+        return f"Erreur serveur: {e}"
