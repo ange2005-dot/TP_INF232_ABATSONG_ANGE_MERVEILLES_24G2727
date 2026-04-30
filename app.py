@@ -19,17 +19,22 @@ def submit():
         "age": int(request.form['age']),
         "hours": float(request.form['hours']),
         "grade": float(request.form['grade']),
-        "skin_color": request.form['skin_color'],
-        "education_level": request.form['education_level'],
+        "level": request.form['education_level'],
         "major": request.form['major']
     }
     data.append(entry)
     return redirect('/dashboard')
 
+@app.route('/delete/<int:index>')
+def delete(index):
+    if 0 <= index < len(data):
+        data.pop(index)
+    return redirect('/dashboard')
+
 @app.route('/dashboard')
 def dashboard():
     if not data:
-        return render_template('dashboard.html', table=None)
+        return render_template('dashboard.html', empty=True)
 
     df = pd.DataFrame(data)
 
@@ -37,34 +42,16 @@ def dashboard():
     avg_hours = round(df["hours"].mean(), 2)
     correlation = round(df["hours"].corr(df["grade"]), 2)
 
-    max_grade = df["grade"].max()
-    min_grade = df["grade"].min()
-
-    if correlation > 0.7:
-        interpretation = "Forte corrélation entre travail et performance."
-    elif correlation > 0.3:
-        interpretation = "Corrélation modérée."
-    else:
-        interpretation = "Faible corrélation."
-
-    skin_counts = df["skin_color"].value_counts().to_dict()
-    level_counts = df["education_level"].value_counts().to_dict()
-    major_counts = df["major"].value_counts().to_dict()
-
-    table = df.to_html(classes='table', index=False)
-
     return render_template(
         'dashboard.html',
         avg_grade=avg_grade,
         avg_hours=avg_hours,
         correlation=correlation,
-        max_grade=max_grade,
-        min_grade=min_grade,
-        interpretation=interpretation,
-        skin_counts=skin_counts,
-        level_counts=level_counts,
-        major_counts=major_counts,
-        table=table
+        data=data,
+        grades=list(df["grade"]),
+        hours=list(df["hours"]),
+        majors=list(df["major"]),
+        levels=list(df["level"])
     )
 
 if __name__ == "__main__":
