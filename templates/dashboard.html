@@ -1,75 +1,118 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-<link rel="stylesheet" href="/static/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - EduAnalytics</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-
 <body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">📊 EduAnalytics</div>
+            <ul class="nav-links">
+                <li><a href="/">Accueil</a></li>
+                <li><a href="/form">Formulaire</a></li>
+                <li><a href="/dashboard" class="active">Dashboard</a></li>
+            </ul>
+        </div>
+    </nav>
 
-<div class="hero">
-<h1>📊 Dashboard Universitaire</h1>
-<a href="/export/pdf">🧾 Export PDF</a>
-</div>
+    {% if empty %}
+    <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <h2>Aucune donnée</h2>
+        <p>Ajoutez des étudiants via le formulaire</p>
+        <a href="/form" class="btn btn-primary">➕ Ajouter</a>
+    </div>
+    {% else %}
 
-<div class="container">
+    <div class="dashboard-header">
+        <h1>📈 Dashboard</h1>
+        <div class="header-actions">
+            <a href="/export/pdf" class="btn-export">📄 Export PDF</a>
+            <a href="/form" class="btn-add">➕ Nouveau</a>
+        </div>
+    </div>
 
-<!-- FILTRE -->
-<form method="get">
-<select name="level">
-{% for l in levels %}
-<option value="{{l}}">{{l}}</option>
-{% endfor %}
-</select>
-<button>Filtrer</button>
-</form>
+    <div class="filters-section">
+        <form method="get" class="filters-form">
+            <select name="level">
+                {% for level in levels %}
+                <option value="{{ level }}" {% if current_level == level %}selected{% endif %}>
+                    {{ 'Tous' if level == 'all' else level }}
+                </option>
+                {% endfor %}
+            </select>
+            <select name="major">
+                {% for major in majors %}
+                <option value="{{ major }}" {% if current_major == major %}selected{% endif %}>
+                    {{ 'Toutes filières' if major == 'all' else major }}
+                </option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn-filter">Filtrer</button>
+        </form>
+    </div>
 
-<!-- KPI -->
-<div class="grid">
+    <div class="kpi-grid">
+        <div class="kpi-card blue">
+            <div class="kpi-value">{{ stats.total }}</div>
+            <div class="kpi-label">Étudiants</div>
+        </div>
+        <div class="kpi-card green">
+            <div class="kpi-value">{{ stats.avg_grade }}/20</div>
+            <div class="kpi-label">Note moyenne</div>
+        </div>
+        <div class="kpi-card orange">
+            <div class="kpi-value">{{ stats.avg_hours }}h</div>
+            <div class="kpi-label">Heures/sem</div>
+        </div>
+        <div class="kpi-card purple">
+            <div class="kpi-value">{{ stats.correlation }}</div>
+            <div class="kpi-label">Corrélation</div>
+        </div>
+    </div>
 
-<div class="card">
-<h3>Note moyenne</h3>
-<p>{{ avg_grade }}</p>
-</div>
+    {% if charts %}
+    <div class="charts-section">
+        <h3>📊 Graphiques</h3>
+        <div class="charts-grid">
+            {% if charts.bar_chart %}
+            <div class="chart-card">
+                <img src="data:image/png;base64,{{ charts.bar_chart }}" alt="Filières">
+            </div>
+            {% endif %}
+            {% if charts.scatter_chart %}
+            <div class="chart-card">
+                <img src="data:image/png;base64,{{ charts.scatter_chart }}" alt="Heures vs Notes">
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
 
-<div class="card">
-<h3>Heures moyennes</h3>
-<p>{{ avg_hours }}</p>
-</div>
-
-<div class="card">
-<h3>Corrélation</h3>
-<p>{{ correlation }}</p>
-</div>
-
-</div>
-
-<!-- GRAPHIQUES PNG -->
-<h3>📊 Graphiques</h3>
-
-<div class="grid">
-<div class="card">
-<img src="/static/bar.png" width="100%">
-</div>
-
-<div class="card">
-<img src="/static/scatter.png" width="100%">
-</div>
-</div>
-
-<!-- TABLE -->
-<h3>Données</h3>
-
-<table border="1">
-{% for row in data %}
-<tr>
-<td>{{row.grade}}</td>
-<td>{{row.hours}}</td>
-<td><a href="/delete/{{loop.index0}}">❌</a></td>
-</tr>
-{% endfor %}
-</table>
-
-</div>
-
+    <div class="data-table-section">
+        <h3>📋 Liste des étudiants</h3>
+        <table class="data-table">
+            <thead>
+                <tr><th>Nom</th><th>Âge</th><th>Niveau</th><th>Filière</th><th>Heures</th><th>Note</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+                {% for student in data %}
+                <tr>
+                    <td><strong>{{ student.name }}</strong></td>
+                    <td>{{ student.age }}</td>
+                    <td>{{ student.level }}</td>
+                    <td>{{ student.major }}</td>
+                    <td>{{ student.hours }}h</td>
+                    <td><span class="grade {% if student.grade >= 12 %}good{% elif student.grade >= 10 %}avg{% else %}bad{% endif %}">{{ student.grade }}/20</span></td>
+                    <td><a href="/delete/{{ loop.index0 }}" class="delete-btn" onclick="return confirm('Supprimer ?')">🗑️</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
 </body>
 </html>
