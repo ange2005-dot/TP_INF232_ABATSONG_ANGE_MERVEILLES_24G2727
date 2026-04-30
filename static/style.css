@@ -1,61 +1,68 @@
+/* GLOBAL */
 body {
     font-family: 'Inter', sans-serif;
-    background: linear-gradient(135deg, #eef2ff, #f8fafc);
+    background: #f5f7fb;
     margin: 0;
 }
 
+/* CONTAINER */
 .container {
-    max-width: 1200px;
+    max-width: 1300px;
     margin: auto;
     padding: 20px;
 }
 
+/* HEADER */
 .hero {
-    background: linear-gradient(135deg, #2563eb, #1e40af);
+    background: linear-gradient(135deg, #1a73e8, #4285f4);
     color: white;
-    padding: 60px;
-    border-radius: 20px;
-    text-align: center;
+    padding: 50px;
+    border-radius: 16px;
     margin-bottom: 30px;
 }
 
-.primary-button {
-    background: white;
-    color: #2563eb;
-    padding: 12px 20px;
-    border-radius: 10px;
-    text-decoration: none;
-    margin: 10px;
-}
-
-.secondary-button {
-    border: 2px solid white;
-    color: white;
-    padding: 12px 20px;
-    border-radius: 10px;
-}
-
-.stats-grid {
+/* GRID DASHBOARD */
+.dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 20px;
 }
 
-.stat-card {
+/* CARDS */
+.card {
     background: white;
+    border-radius: 16px;
     padding: 20px;
-    border-radius: 15px;
-    text-align: center;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    transition: 0.3s;
 }
 
-form {
-    background: white;
-    padding: 25px;
-    border-radius: 15px;
+.card:hover {
+    transform: translateY(-6px);
 }
 
-input, select {
-    width: 100%;
-    padding: 10px;
-    margin-top: 5px;
+/* STATS */
+.stat {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #1a73e8;
+}
+
+/* BUTTON */
+.primary-button {
+    background: #1a73e8;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+}
+
+/* ANIMATION */
+.fade-in {
+    animation: fadeIn 1s ease-in;
+}
+
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(10px);}
+    to {opacity: 1; transform: translateY(0);}
 }
