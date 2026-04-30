@@ -1,118 +1,79 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - EduAnalytics</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo">📊 EduAnalytics</div>
-            <ul class="nav-links">
-                <li><a href="/">Accueil</a></li>
-                <li><a href="/form">Formulaire</a></li>
-                <li><a href="/dashboard" class="active">Dashboard</a></li>
-            </ul>
-        </div>
-    </nav>
+@app.route("/dashboard")
+def dashboard():
 
-    {% if empty %}
-    <div class="empty-state">
-        <div class="empty-icon">📭</div>
-        <h2>Aucune donnée</h2>
-        <p>Ajoutez des étudiants via le formulaire</p>
-        <a href="/form" class="btn btn-primary">➕ Ajouter</a>
-    </div>
-    {% else %}
+    if not data:
+        return render_template("dashboard.html", empty=True)
 
-    <div class="dashboard-header">
-        <h1>📈 Dashboard</h1>
-        <div class="header-actions">
-            <a href="/export/csv" class="btn-export">📄 Export CSV</a>
-            <a href="/form" class="btn-add">➕ Nouveau</a>
-        </div>
-    </div>
+    df = pd.DataFrame(data)
 
-    <div class="filters-section">
-        <form method="get" class="filters-form">
-            <select name="level">
-                {% for level in levels %}
-                <option value="{{ level }}" {% if current_level == level %}selected{% endif %}>
-                    {{ 'Tous' if level == 'all' else level }}
-                </option>
-                {% endfor %}
-            </select>
-            <select name="major">
-                {% for major in majors %}
-                <option value="{{ major }}" {% if current_major == major %}selected{% endif %}>
-                    {{ 'Toutes filières' if major == 'all' else major }}
-                </option>
-                {% endfor %}
-            </select>
-            <button type="submit" class="btn-filter">Filtrer</button>
-        </form>
-    </div>
+    # FILTRES (SÉCURISÉS)
+    level_filter = request.args.get("level", "all")
+    major_filter = request.args.get("major", "all")
 
-    <div class="kpi-grid">
-        <div class="kpi-card blue">
-            <div class="kpi-value">{{ stats.total }}</div>
-            <div class="kpi-label">Étudiants</div>
-        </div>
-        <div class="kpi-card green">
-            <div class="kpi-value">{{ stats.avg_grade }}/20</div>
-            <div class="kpi-label">Note moyenne</div>
-        </div>
-        <div class="kpi-card orange">
-            <div class="kpi-value">{{ stats.avg_hours }}h</div>
-            <div class="kpi-label">Heures/sem</div>
-        </div>
-        <div class="kpi-card purple">
-            <div class="kpi-value">{{ stats.correlation }}</div>
-            <div class="kpi-label">Corrélation</div>
-        </div>
-    </div>
+    if level_filter != "all":
+        df = df[df["level"] == level_filter]
 
-    {% if charts %}
-    <div class="charts-section">
-        <h3>📊 Graphiques</h3>
-        <div class="charts-grid">
-            {% if charts.bar_chart %}
-            <div class="chart-card">
-                <img src="data:image/png;base64,{{ charts.bar_chart }}" alt="Filières">
-            </div>
-            {% endif %}
-            {% if charts.scatter_chart %}
-            <div class="chart-card">
-                <img src="data:image/png;base64,{{ charts.scatter_chart }}" alt="Heures vs Notes">
-            </div>
-            {% endif %}
-        </div>
-    </div>
-    {% endif %}
+    if major_filter != "all":
+        df = df[df["major"] == major_filter]
 
-    <div class="data-table-section">
-        <h3>📋 Liste des étudiants</h3>
-        <table class="data-table">
-            <thead>
-                <tr><th>Nom</th><th>Âge</th><th>Niveau</th><th>Filière</th><th>Heures</th><th>Note</th><th>Action</th></tr>
-            </thead>
-            <tbody>
-                {% for student in data %}
-                <tr>
-                    <td><strong>{{ student.name }}</strong></td>
-                    <td>{{ student.age }}</td>
-                    <td>{{ student.level }}</td>
-                    <td>{{ student.major }}</td>
-                    <td>{{ student.hours }}h</td>
-                    <td><span class="grade {% if student.grade >= 12 %}good{% elif student.grade >= 10 %}avg{% else %}bad{% endif %}">{{ student.grade }}/20</span></td>
-                    <td><a href="/delete/{{ loop.index0 }}" class="delete-btn" onclick="return confirm('Supprimer ?')">🗑️</a></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% endif %}
-</body>
-</html>
+    # SAFE DATA (ÉVITE CRASH)
+    avg_grade = round(df["grade"].mean(), 2) if len(df) > 0 else 0
+    avg_hours = round(df["hours"].mean(), 2) if len(df) > 0 else 0
+
+    correlation = df["hours"].corr(df["grade"]) if len(df) > 1 else 0
+    if pd.isna(correlation):
+        correlation = 0
+    else:
+        correlation = round(correlation, 2)
+
+    # STATS (IMPORTANT POUR TON HTML)
+    stats = {
+        "total": len(df),
+        "avg_grade": avg_grade,
+        "avg_hours": avg_hours,
+        "correlation": correlation
+    }
+
+    # LISTES POUR FILTRES (IMPORTANT)
+    levels = ["all", "L1", "L2", "L3"]
+    majors = ["all"] + sorted(list(set([d["major"] for d in data])))
+
+    # CHARTS SAFE (TON HTML ATTEND BASE64)
+    charts = {}
+
+    import matplotlib.pyplot as plt
+    import base64
+    from io import BytesIO
+
+    # BAR CHART
+    if len(df) > 0:
+        fig, ax = plt.subplots()
+        df["major"].value_counts().plot(kind="bar", ax=ax)
+        ax.set_title("Filières")
+        buf = BytesIO()
+        plt.savefig(buf, format="png")
+        buf.seek(0)
+        charts["bar_chart"] = base64.b64encode(buf.read()).decode("utf-8")
+        plt.close()
+
+        # SCATTER
+        fig, ax = plt.subplots()
+        ax.scatter(df["hours"], df["grade"])
+        ax.set_title("Heures vs Notes")
+        buf = BytesIO()
+        plt.savefig(buf, format="png")
+        buf.seek(0)
+        charts["scatter_chart"] = base64.b64encode(buf.read()).decode("utf-8")
+        plt.close()
+
+    return render_template(
+        "dashboard.html",
+        empty=False,
+        data=df.to_dict(orient="records"),
+        stats=stats,
+        charts=charts,
+        levels=levels,
+        majors=majors,
+        current_level=level_filter,
+        current_major=major_filter
+    )
