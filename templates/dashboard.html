@@ -6,7 +6,7 @@ def dashboard():
 
     df = pd.DataFrame(data)
 
-    # FILTRES (SÉCURISÉS)
+    # FILTRES
     level_filter = request.args.get("level", "all")
     major_filter = request.args.get("major", "all")
 
@@ -16,7 +16,7 @@ def dashboard():
     if major_filter != "all":
         df = df[df["major"] == major_filter]
 
-    # SAFE DATA (ÉVITE CRASH)
+    # SAFE STATS
     avg_grade = round(df["grade"].mean(), 2) if len(df) > 0 else 0
     avg_hours = round(df["hours"].mean(), 2) if len(df) > 0 else 0
 
@@ -26,7 +26,6 @@ def dashboard():
     else:
         correlation = round(correlation, 2)
 
-    # STATS (IMPORTANT POUR TON HTML)
     stats = {
         "total": len(df),
         "avg_grade": avg_grade,
@@ -34,22 +33,22 @@ def dashboard():
         "correlation": correlation
     }
 
-    # LISTES POUR FILTRES (IMPORTANT)
     levels = ["all", "L1", "L2", "L3"]
     majors = ["all"] + sorted(list(set([d["major"] for d in data])))
 
-    # CHARTS SAFE (TON HTML ATTEND BASE64)
     charts = {}
 
     import matplotlib.pyplot as plt
     import base64
     from io import BytesIO
 
-    # BAR CHART
     if len(df) > 0:
+
+        # BAR CHART
         fig, ax = plt.subplots()
         df["major"].value_counts().plot(kind="bar", ax=ax)
         ax.set_title("Filières")
+
         buf = BytesIO()
         plt.savefig(buf, format="png")
         buf.seek(0)
@@ -60,6 +59,7 @@ def dashboard():
         fig, ax = plt.subplots()
         ax.scatter(df["hours"], df["grade"])
         ax.set_title("Heures vs Notes")
+
         buf = BytesIO()
         plt.savefig(buf, format="png")
         buf.seek(0)
