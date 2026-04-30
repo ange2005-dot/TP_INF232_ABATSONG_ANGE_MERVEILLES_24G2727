@@ -1,50 +1,25 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
-<div class="container">
+<div class="form-box">
 
-<div class="hero">
-<h1>Ajouter données</h1>
-</div>
+<h2>Entrée des données</h2>
 
 <form action="/submit" method="post">
+<input name="age" placeholder="Age">
+<input name="hours" placeholder="Heures">
+<input name="grade" placeholder="Note">
 
-<label>Âge <input type="number" name="age" required></label>
-<label>Heures <input type="number" step="0.1" name="hours" required></label>
-<label>Note <input type="number" step="0.1" name="grade" required></label>
-
-<label>Couleur
-<select name="skin_color">
-<option>Clair</option>
-<option>Moyen</option>
-<option>Foncé</option>
-</select>
-</label>
-
-<label>Niveau
 <select name="education_level">
-<option>Primaire</option>
-<option>Lycée</option>
-<option>Université</option>
+<option>L1</option>
+<option>L2</option>
+<option>L3</option>
 </select>
-</label>
 
-<label>Filière
 <select name="major">
-<option>Sciences</option>
 <option>Informatique</option>
+<option>Sciences</option>
 <option>Économie</option>
 </select>
-</label>
 
-<button class="primary-button">Envoyer</button>
-
+<button>Ajouter</button>
 </form>
 
 </div>
-</body>
-</html>
